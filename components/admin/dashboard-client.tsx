@@ -13,13 +13,24 @@ export function DashboardClient({ invitations }: DashboardClientProps) {
       {/* Your Invitations */}
       <Card>
         <CardHeader>
-          <CardTitle>Your Invitations</CardTitle>
-          <CardDescription>Manage your wedding invitations</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Your Invitations</CardTitle>
+              <CardDescription>Recent invitations</CardDescription>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.open('/admin/invitations', '_self')}
+            >
+              View All
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           {invitations && invitations.length > 0 ? (
             <div className="space-y-3">
-              {invitations.map((invitation: any) => (
+              {invitations.slice(0, 3).map((invitation: any) => (
                 <div key={invitation.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div>
                     <div className="font-medium">{invitation.slug}</div>
@@ -38,13 +49,24 @@ export function DashboardClient({ invitations }: DashboardClientProps) {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => window.open(`/admin/invitations/${invitation.id}/edit`, '_blank')}
+                      onClick={() => window.open(`/admin/invitations/${invitation.id}/edit`, '_self')}
                     >
                       Edit
                     </Button>
                   </div>
                 </div>
               ))}
+              {invitations.length > 3 && (
+                <div className="text-center pt-2">
+                  <Button
+                    variant="link"
+                    size="sm"
+                    onClick={() => window.open('/admin/invitations', '_self')}
+                  >
+                    View all {invitations.length} invitations →
+                  </Button>
+                </div>
+              )}
             </div>
           ) : (
             <div className="text-center py-4">
@@ -75,9 +97,9 @@ export function DashboardClient({ invitations }: DashboardClientProps) {
           <Button
             variant="outline"
             className="w-full"
-            onClick={() => window.open('/admin/rsvps', '_self')}
+            onClick={() => window.open('/admin/invitations', '_self')}
           >
-            View All RSVPs
+            Manage All Invitations
           </Button>
           <Button
             variant="outline"

@@ -110,27 +110,34 @@ export function StepGallery({ form }: StepGalleryProps) {
             {/* Photo Grid */}
             {photoFields.length > 0 && (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {photoFields.map((field, index) => (
-                  <div key={field.id} className="relative group">
-                    <img
-                      src={typeof field === 'string' ? field : ''}
-                      alt={`Wedding photo ${index + 1}`}
-                      className="w-full h-32 object-cover rounded-lg"
-                    />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="sm"
-                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => removePhotoItem(index)}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                    <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
-                      {index + 1}
+                {photoFields.map((field, index) => {
+                  const photoSrc = typeof field === 'string' ? field : ''
+                  
+                  // Only render if we have a valid photo source
+                  if (!photoSrc) return null
+                  
+                  return (
+                    <div key={field.id} className="relative group">
+                      <img
+                        src={photoSrc}
+                        alt={`Wedding photo ${index + 1}`}
+                        className="w-full h-32 object-cover rounded-lg"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => removePhotoItem(index)}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                      <div className="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                        {index + 1}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             )}
 

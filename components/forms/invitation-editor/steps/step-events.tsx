@@ -1,6 +1,7 @@
 'use client'
 
-import { useFormContext } from 'react-hook-form'
+import React from 'react'
+import { useFormContext, Controller } from 'react-hook-form'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -21,6 +22,155 @@ const EVENT_TYPES: { value: EventType; label: string; icon: string }[] = [
   { value: 'reception', label: 'Resepsi', icon: '🎉' },
   { value: 'other', label: 'Other Event', icon: '📅' },
 ]
+
+const EventCard = React.memo(({ field, index, control, register, watch, setValue, onRemove, canRemove }: {
+  field: any
+  index: number
+  control: any
+  register: any
+  watch: any
+  setValue: any
+  onRemove: () => void
+  canRemove: boolean
+}) => {
+  const eventType = watch(`events.${index}.type`)
+  const eventTypeInfo = EVENT_TYPES.find(t => t.value === eventType)
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            {eventTypeInfo?.icon}
+            <span>Event {index + 1}</span>
+            <Badge variant="outline">{eventTypeInfo?.label || eventType}</Badge>
+          </CardTitle>
+          {canRemove && (
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              onClick={onRemove}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Event Type */}
+          <div className="space-y-2">
+            <Label>Event Type</Label>
+            <Controller
+              name={`events.${index}.type`}
+              control={control}
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select event type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {EVENT_TYPES.map(type => (
+                      <SelectItem key={type.value} value={type.value}>
+                        <div className="flex items-center gap-2">
+                          <span>{type.icon}</span>
+                          {type.label}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          </div>
+
+          {/* Event Title */}
+          <div className="space-y-2">
+            <Label>Event Title</Label>
+            <Input
+              placeholder="Enter event title"
+              {...register(`events.${index}.title`)}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Date */}
+          <div className="space-y-2">
+            <Label>Date *</Label>
+            <Input
+              type="date"
+              {...register(`events.${index}.date`)}
+            />
+          </div>
+
+          {/* Time */}
+          <div className="space-y-2">
+            <Label>Time *</Label>
+            <Input
+              type="time"
+              {...register(`events.${index}.time`)}
+            />
+          </div>
+        </div>
+
+        {/* Venue */}
+        <div className="space-y-2">
+          <Label>Venue *</Label>
+          <Input
+            placeholder="Enter venue name"
+            {...register(`events.${index}.venue`)}
+          />
+        </div>
+
+        {/* Address */}
+        <div className="space-y-2">
+          <Label>Address *</Label>
+          <Controller
+            name={`events.${index}.address`}
+            control={control}
+            render={({ field }) => (
+              <Textarea
+                placeholder="Enter full address"
+                rows={2}
+                value={field.value || ''}
+                onChange={field.onChange}
+              />
+            )}
+          />
+        </div>
+
+        {/* Maps Link */}
+        <div className="space-y-2">
+          <Label>Google Maps Link</Label>
+          <div className="flex gap-2">
+            <Input
+              placeholder="https://maps.google.com/..."
+              {...register(`events.${index}.mapsLink`)}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const venue = watch(`events.${index}.venue`)
+                const address = watch(`events.${index}.address`)
+                if (venue || address) {
+                  const query = encodeURIComponent(`${venue}, ${address}`)
+                  const mapsUrl = `https://maps.google.com/?q=${query}`
+                  setValue(`events.${index}.mapsLink`, mapsUrl)
+                }
+              }}
+            >
+              Auto-generate
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+})
 
 export function StepEvents({ form }: StepEventsProps) {
   const {
@@ -50,148 +200,10 @@ export function StepEvents({ form }: StepEventsProps) {
     append(newEvent)
   }
 
-  const updateEventField = (index: number, field: string, value: string) => {
-    setValue(`events.${index}.${field}` as any, value)
-  }
+
 
   const removeEvent = (index: number) => {
     remove(index)
-  }
-
-  const EventCard = ({ field, index }: { field: any; index: number }) => {
-    const eventType = watch(`events.${index}.type`)
-    const eventTypeInfo = EVENT_TYPES.find(t => t.value === eventType)
-
-    return (
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              {eventTypeInfo?.icon}
-              <span>Event {index + 1}</span>
-              <Badge variant="outline">{eventTypeInfo?.label || eventType}</Badge>
-            </CardTitle>
-            {fields.length > 1 && (
-              <Button
-                type="button"
-                variant="destructive"
-                size="sm"
-                onClick={() => removeEvent(index)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Event Type */}
-            <div className="space-y-2">
-              <Label>Event Type</Label>
-              <Select
-                value={eventType}
-                onValueChange={(value) => updateEventField(index, 'type', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select event type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {EVENT_TYPES.map(type => (
-                    <SelectItem key={type.value} value={type.value}>
-                      <div className="flex items-center gap-2">
-                        <span>{type.icon}</span>
-                        {type.label}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Event Title */}
-            <div className="space-y-2">
-              <Label>Event Title</Label>
-              <Input
-                placeholder="Enter event title"
-                value={field.title || ''}
-                onChange={(e) => updateEventField(index, 'title', e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Date */}
-            <div className="space-y-2">
-              <Label>Date *</Label>
-              <Input
-                type="date"
-                value={field.date || ''}
-                onChange={(e) => updateEventField(index, 'date', e.target.value)}
-              />
-            </div>
-
-            {/* Time */}
-            <div className="space-y-2">
-              <Label>Time *</Label>
-              <Input
-                type="time"
-                value={field.time || ''}
-                onChange={(e) => updateEventField(index, 'time', e.target.value)}
-              />
-            </div>
-          </div>
-
-          {/* Venue */}
-          <div className="space-y-2">
-            <Label>Venue *</Label>
-            <Input
-              placeholder="Enter venue name"
-              value={field.venue || ''}
-              onChange={(e) => updateEventField(index, 'venue', e.target.value)}
-            />
-          </div>
-
-          {/* Address */}
-          <div className="space-y-2">
-            <Label>Address *</Label>
-            <Textarea
-              placeholder="Enter full address"
-              rows={2}
-              value={field.address || ''}
-              onChange={(e) => updateEventField(index, 'address', e.target.value)}
-            />
-          </div>
-
-          {/* Maps Link */}
-          <div className="space-y-2">
-            <Label>Google Maps Link</Label>
-            <div className="flex gap-2">
-              <Input
-                placeholder="https://maps.google.com/..."
-                value={field.mapsLink || ''}
-                onChange={(e) => updateEventField(index, 'mapsLink', e.target.value)}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const venue = field.venue
-                  const address = field.address
-                  if (venue || address) {
-                    const query = encodeURIComponent(`${venue}, ${address}`)
-                    const mapsUrl = `https://maps.google.com/?q=${query}`
-                    updateEventField(index, 'mapsLink', mapsUrl)
-                  }
-                }}
-              >
-                Auto-generate
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    )
   }
 
   return (
@@ -211,7 +223,17 @@ export function StepEvents({ form }: StepEventsProps) {
 
       <div className="space-y-4">
         {fields.map((field, index) => (
-          <EventCard key={field.id} field={field} index={index} />
+          <EventCard 
+            key={field.id} 
+            field={field} 
+            index={index}
+            control={control}
+            register={register}
+            watch={watch}
+            setValue={setValue}
+            onRemove={() => removeEvent(index)}
+            canRemove={fields.length > 1}
+          />
         ))}
       </div>
 
