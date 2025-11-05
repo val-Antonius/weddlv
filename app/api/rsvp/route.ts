@@ -1,5 +1,3 @@
-'use server'
-
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -24,7 +22,7 @@ export async function POST(request: Request) {
     const { invitation_id, name, email, phone, attendance, guest_count, message } = validatedData.data
 
     // Create Supabase client
-    const supabase = createClient()
+    const supabase = await createClient()
 
     // First, get the invitation details to find the host
     const { data: invitation, error: invitationError } = await supabase

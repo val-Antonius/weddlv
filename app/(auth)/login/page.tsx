@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { signIn } from '../actions'
 import { signInSchema, type SignInFormValues } from '@/lib/validations'
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(false)
@@ -28,10 +28,12 @@ export default function LoginPage() {
   })
 
   // Show success message from redirect (e.g., after email verification)
-  const message = searchParams.get('message')
-  if (message && !success) {
-    setSuccess(message)
-  }
+  useEffect(() => {
+    const message = searchParams.get('message')
+    if (message && !success) {
+      setSuccess(message)
+    }
+  }, [searchParams, success])
 
   const onSubmit = async (data: SignInFormValues) => {
     setIsLoading(true)
@@ -62,75 +64,89 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Sign in</CardTitle>
-          <CardDescription className="text-center">
-            Enter your email and password to access your account
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {error && (
-              <div className="rounded-md bg-red-50 p-4">
-                <div className="text-sm text-red-700">{error}</div>
-              </div>
-            )}
-            {success && (
-              <div className="rounded-md bg-green-50 p-4">
-                <div className="text-sm text-green-700">{success}</div>
-              </div>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                {...register('email')}
-                disabled={isLoading}
-                className={errors.email ? 'border-red-500' : ''}
-              />
-              {errors.email && (
-                <p className="text-sm text-red-600">{errors.email.message}</p>
-              )}
+    <Card className="w-full max-w-md">
+      <CardHeader className="space-y-1">
+        <CardTitle className="text-2xl font-bold text-center">Sign in</CardTitle>
+        <CardDescription className="text-center">
+          Enter your email and password to access your account
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {error && (
+            <div className="rounded-md bg-red-50 p-4">
+              <div className="text-sm text-red-700">{error}</div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                {...register('password')}
-                disabled={isLoading}
-                className={errors.password ? 'border-red-500' : ''}
-              />
-              {errors.password && (
-                <p className="text-sm text-red-600">{errors.password.message}</p>
-              )}
+          )}
+          {success && (
+            <div className="rounded-md bg-green-50 p-4">
+              <div className="text-sm text-green-700">{success}</div>
             </div>
-            <Button 
-              type="submit" 
-              className="w-full" 
+          )}
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="Enter your email"
+              {...register('email')}
               disabled={isLoading}
-            >
-              {isLoading ? 'Signing in...' : 'Sign in'}
-            </Button>
-          </form>
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Don't have an account?{' '}
-              <Link 
-                href="/signup" 
-                className="font-medium text-blue-600 hover:text-blue-500"
-              >
-                Sign up
-              </Link>
-            </p>
+              className={errors.email ? 'border-red-500' : ''}
+            />
+            {errors.email && (
+              <p className="text-sm text-red-600">{errors.email.message}</p>
+            )}
           </div>
-        </CardContent>
-      </Card>
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="Enter your password"
+              {...register('password')}
+              disabled={isLoading}
+              className={errors.password ? 'border-red-500' : ''}
+            />
+            {errors.password && (
+              <p className="text-sm text-red-600">{errors.password.message}</p>
+            )}
+          </div>
+          <Button 
+            type="submit" 
+            className="w-full" 
+            disabled={isLoading}
+          >
+            {isLoading ? 'Signing in...' : 'Sign in'}
+          </Button>
+        </form>
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-600">
+            Don't have an account?{' '}
+            <Link 
+              href="/signup" 
+              className="font-medium text-blue-600 hover:text-blue-500"
+            >
+              Sign up
+            </Link>
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <Suspense fallback={
+        <Card className="w-full max-w-md">
+          <CardContent className="p-6">
+            <div className="text-center">Loading...</div>
+          </CardContent>
+        </Card>
+      }>
+        <LoginForm />
+      </Suspense>
     </div>
   )
 }
