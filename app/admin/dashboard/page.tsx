@@ -1,13 +1,14 @@
 import { createClient } from '@/lib/supabase/server'
 import { signOut } from '@/app/(auth)/actions'
 import { RSVPTable } from '@/components/admin/rsvp-table'
+import { DashboardClient } from '@/components/admin/dashboard-client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import type { Database } from '@/types/database'
 
 export default async function AdminDashboard() {
   // Get current user
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
@@ -45,14 +46,14 @@ export default async function AdminDashboard() {
     .order('created_at', { ascending: false })
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-rose-50/50 via-pink-50/50 to-orange-50/50">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-rose-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div>
-              <h1 className="text-xl font-semibold text-gray-900">Admin Dashboard</h1>
-              <p className="text-sm text-gray-500">Manage your wedding invitations</p>
+              <h1 className="text-xl font-semibold bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">Admin Dashboard</h1>
+              <p className="text-sm text-gray-600">Manage your wedding invitations</p>
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-600">
@@ -126,88 +127,7 @@ export default async function AdminDashboard() {
               </CardContent>
             </Card>
 
-            {/* Your Invitations */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Your Invitations</CardTitle>
-                <CardDescription>Manage your wedding invitations</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {invitations && invitations.length > 0 ? (
-                  <div className="space-y-3">
-                    {invitations.map((invitation: any) => (
-                      <div key={invitation.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div>
-                          <div className="font-medium">{invitation.slug}</div>
-                          <div className="text-sm text-gray-500">
-                            {invitation.is_published ? 'Published' : 'Draft'}
-                          </div>
-                        </div>
-                        <div className="flex space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => window.open(`/${invitation.slug}`, '_blank')}
-                          >
-                            View
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => window.open(`/admin/invitations/${invitation.id}/edit`, '_blank')}
-                          >
-                            Edit
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-4">
-                    <p className="text-gray-600 mb-4">No invitations yet</p>
-                    <Button
-                      onClick={() => window.open('/admin/invitations/create', '_self')}
-                    >
-                      Create Your First Invitation
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-                <CardDescription>Common tasks</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button
-                  className="w-full"
-                  onClick={() => window.open('/admin/invitations/create', '_self')}
-                >
-                  Create New Invitation
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => window.open('/admin/rsvps', '_self')}
-                >
-                  View All RSVPs
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => {
-                    // Copy current domain to clipboard for sharing
-                    navigator.clipboard.writeText(window.location.origin)
-                    alert('Domain copied to clipboard!')
-                  }}
-                >
-                  Copy Domain
-                </Button>
-              </CardContent>
-            </Card>
+            <DashboardClient invitations={invitations || []} />
           </div>
         </div>
       </div>

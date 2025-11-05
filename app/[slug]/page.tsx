@@ -1,20 +1,33 @@
 import { createClient } from '@/lib/supabase/server'
 import { RSVPForm } from '@/components/forms/rsvp-form'
+import { CoverSection } from '@/components/invitations/sections/cover-section'
+import { CountdownSection } from '@/components/invitations/sections/countdown-section'
+import { EventsSection } from '@/components/invitations/sections/events-section'
+import { GallerySection } from '@/components/invitations/sections/gallery-section'
+import { GuestbookSection } from '@/components/invitations/sections/guestbook-section'
+import { GiftSection } from '@/components/invitations/sections/gift-section'
+import { MusicPlayer } from '@/components/invitations/music-player'
+import { HealthProtocolPopup } from '@/components/invitations/health-protocol-popup'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import type { Database } from '@/types/database'
+import type { InvitationConfig } from '@/types/invitation'
 
 interface PageProps {
   params: {
     slug: string
   }
+  searchParams: {
+    to?: string
+  }
 }
 
-export default async function InvitationPage({ params }: PageProps) {
+export default async function InvitationPage({ params, searchParams }: PageProps) {
   const { slug } = params
-  const supabase = createClient()
+  const { to: guestName } = searchParams
+  const supabase = await createClient()
 
   // Fetch invitation by slug
-  const { data: invitation, error } = await supabase
+  const { data: invitation, error } = await (supabase as any)
     .from('invitations')
     .select(`
       *,
@@ -45,15 +58,15 @@ export default async function InvitationPage({ params }: PageProps) {
   }
 
   // Parse invitation config
-  let invitationConfig = null
+  let invitationConfig: InvitationConfig | null = null
   let coupleNames = ''
 
   try {
-    invitationConfig = typeof (invitation as any).config_json === 'string' 
-      ? JSON.parse((invitation as any).config_json) 
-      : (invitation as any).config_json
+    invitationConfig = typeof invitation.config_json === 'string' 
+      ? JSON.parse(invitation.config_json) 
+      : invitation.config_json as InvitationConfig
 
-    if (invitationConfig.couple) {
+    if (invitationConfig?.couple) {
       const brideName = invitationConfig.couple.bride?.nickname || invitationConfig.couple.bride?.fullName || ''
       const groomName = invitationConfig.couple.groom?.nickname || invitationConfig.couple.groom?.fullName || ''
       coupleNames = brideName && groomName ? `${brideName} & ${groomName}` : ''
@@ -62,56 +75,55 @@ export default async function InvitationPage({ params }: PageProps) {
     console.error('Error parsing invitation config:', configError)
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-blue-50">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-4">
-              {coupleNames || 'You\'re Invited!'}
-            </h1>
-            <p className="text-xl md:text-2xl text-gray-600 mb-8">
-              Request the pleasure of your company
-            </p>
-            <div className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
-              <span className="text-lg">💑</span>
-              <span className="ml-2">You're Invited!</span>
-            </div>
-          </div>
-        </div>
+  if (!invitationConfig) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-center">Configuration Error</CardTitle>
+            <CardDescription className="text-center">
+              There was an error loading the invitation configuration.
+            </CardDescription>
+          </CardHeader>
+        </Card>
       </div>
+    )
+  }
 
-      {/* Event Details */}
-      {invitationConfig?.events && invitationConfig.events.length > 0 && (
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-center">Event Details</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {invitationConfig.events.map((event: any, index: number) => (
-                  <div key={index} className="text-center p-6 bg-gray-50 rounded-lg">
-                    <h3 className="text-lg font-semibold mb-2">{event.title}</h3>
-                    <p className="text-gray-600 mb-1">
-                      📅 {new Date(event.date).toLocaleDateString()}
-                    </p>
-                    <p className="text-gray-600 mb-2">
-                      🕐 {event.time}
-                    </p>
-                    <p className="text-gray-800 font-medium">
-                      📍 {event.venue}
-                    </p>
-                    <p className="text-sm text-gray-600 mt-2">
-                      {event.address}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+  return (
+    <div className="min-h-screen">
+      {/* Music Player - Always present if configured */}
+      {invitationConfig.music && (
+        <MusicPlayer music={invitationConfig.music} />
+      )}
+
+      {/* Health Protocol Popup - Show if enabled */}
+      {invitationConfig.settings.showProtocolPopup && (
+        <HealthProtocolPopup />
+      )}
+
+      {/* Cover Section */}
+      <CoverSection 
+        config={invitationConfig as any}
+      />
+
+      {/* Countdown Section */}
+      <CountdownSection 
+        targetDate={invitationConfig.events[0]?.date}
+        template={invitationConfig.template}
+      />
+
+      {/* Events Section */}
+      <EventsSection 
+        events={invitationConfig.events}
+        template={invitationConfig.template}
+      />
+
+      {/* Gallery Section */}
+      {invitationConfig.gallery?.photos && invitationConfig.gallery.photos.length > 0 && (
+        <GallerySection 
+          config={invitationConfig as any}
+        />
       )}
 
       {/* RSVP Section */}
@@ -119,12 +131,12 @@ export default async function InvitationPage({ params }: PageProps) {
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">RSVP</h2>
           <p className="text-lg text-gray-600">
-            Please let us know if you can attend by {new Date().toLocaleDateString()}
+            Please let us know if you can attend
           </p>
         </div>
         
         <RSVPForm 
-          invitationId={(invitation as any).id}
+          invitationId={invitation.id}
           invitationTitle={coupleNames || 'Wedding Invitation'}
           onSuccess={() => {
             // You could show a success message or redirect here
@@ -132,6 +144,22 @@ export default async function InvitationPage({ params }: PageProps) {
           }}
         />
       </div>
+
+      {/* Guestbook Section */}
+      {invitationConfig.settings.enableGuestbook && (
+        <GuestbookSection 
+          invitationId={invitation.id}
+          template={invitationConfig.template}
+        />
+      )}
+
+      {/* Gift Section */}
+      {invitationConfig.gift?.enabled && (
+        <GiftSection 
+          gift={invitationConfig.gift}
+          template={invitationConfig.template}
+        />
+      )}
 
       {/* Footer */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

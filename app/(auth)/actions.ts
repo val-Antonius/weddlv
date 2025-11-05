@@ -18,7 +18,7 @@ export async function signIn(formData: FormData) {
   const { email, password } = validatedFields.data
 
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -51,7 +51,7 @@ export async function signUp(formData: FormData) {
   const { email, password } = validatedFields.data
 
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -81,7 +81,7 @@ export async function signUp(formData: FormData) {
 
 export async function signOut() {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { error } = await supabase.auth.signOut()
 
     if (error) {

@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Check if slug exists in database
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data, error } = await supabase
       .from('invitations')
       .select('slug')

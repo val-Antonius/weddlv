@@ -201,53 +201,59 @@ export function InvitationEditor({ mode, initialData }: InvitationEditorProps) {
   return (
     <div className="space-y-6">
       {/* Progress Bar */}
-      <div className="space-y-2">
-        <div className="flex justify-between text-sm">
-          <span>Step {currentStep + 1} of {STEPS.length}</span>
-          <span>{Math.round(progress)}% Complete</span>
+      <div className="bg-white/60 backdrop-blur-sm rounded-xl p-4 border border-rose-100">
+        <div className="space-y-3">
+          <div className="flex justify-between text-sm font-medium">
+            <span className="text-rose-700">Step {currentStep + 1} of {STEPS.length}</span>
+            <span className="text-pink-600">{Math.round(progress)}% Complete</span>
+          </div>
+          <Progress value={progress} className="h-3 bg-rose-100" />
         </div>
-        <Progress value={progress} className="h-2" />
       </div>
 
       {/* Step Navigation */}
-      <div className="flex flex-wrap gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
         {STEPS.map((step, index) => (
           <Button
             key={step.id}
             variant={index <= currentStep ? 'default' : 'outline'}
             size="sm"
             onClick={() => setCurrentStep(index)}
-            className="h-auto p-2"
+            className={`h-auto p-3 transition-all duration-200 ${
+              index <= currentStep 
+                ? 'bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white shadow-lg' 
+                : 'border-rose-200 hover:border-rose-300 hover:bg-rose-50'
+            }`}
           >
-            <div className="text-left">
-              <div className="font-medium">{step.title}</div>
-              <div className="text-xs opacity-70">{step.description}</div>
+            <div className="text-center">
+              <div className="font-medium text-xs sm:text-sm">{step.title}</div>
+              <div className="text-xs opacity-70 hidden sm:block">{step.description}</div>
             </div>
           </Button>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Form Content */}
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
+        <div className="xl:col-span-2">
+          <Card className="bg-white/80 backdrop-blur-sm border-rose-100 shadow-xl">
+            <CardHeader className="bg-gradient-to-r from-rose-50 to-pink-50 border-b border-rose-100">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <Sparkles className="h-5 w-5" />
+                  <CardTitle className="flex items-center gap-2 text-rose-800">
+                    <Sparkles className="h-5 w-5 text-amber-500" />
                     {currentStepData.title}
                   </CardTitle>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-sm text-rose-600 mt-1">
                     {currentStepData.description}
                   </p>
                 </div>
-                <Badge variant="outline">
+                <Badge variant="outline" className="border-rose-300 text-rose-700 bg-rose-50 w-fit">
                   {currentStep + 1}/{STEPS.length}
                 </Badge>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-6">
               <form onSubmit={(e) => e.preventDefault()}>
                 {renderStepContent()}
               </form>
@@ -255,20 +261,22 @@ export function InvitationEditor({ mode, initialData }: InvitationEditorProps) {
           </Card>
 
           {/* Navigation Buttons */}
-          <div className="flex justify-between mt-6">
+          <div className="flex flex-col sm:flex-row justify-between gap-4 mt-6 p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-rose-100">
             <Button
               variant="outline"
               onClick={handlePrevious}
               disabled={currentStep === 0}
+              className="border-rose-200 hover:border-rose-300 hover:bg-rose-50 disabled:opacity-50"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Previous
             </Button>
 
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Button
                 variant="outline"
                 onClick={() => setShowPreview(true)}
+                className="border-amber-200 hover:border-amber-300 hover:bg-amber-50 text-amber-700"
               >
                 <Eye className="mr-2 h-4 w-4" />
                 Preview
@@ -277,6 +285,7 @@ export function InvitationEditor({ mode, initialData }: InvitationEditorProps) {
               <Button
                 onClick={handleNext}
                 disabled={isSubmitting}
+                className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white shadow-lg disabled:opacity-50"
               >
                 {isSubmitting ? (
                   'Saving...'
@@ -297,16 +306,21 @@ export function InvitationEditor({ mode, initialData }: InvitationEditorProps) {
         </div>
 
         {/* Preview Panel */}
-        <div className="lg:col-span-1">
-          <Card className="sticky top-6">
-            <CardHeader>
-              <CardTitle>Live Preview</CardTitle>
+        <div className="xl:col-span-1">
+          <Card className="sticky top-6 bg-white/80 backdrop-blur-sm border-rose-100 shadow-xl">
+            <CardHeader className="bg-gradient-to-r from-amber-50 to-orange-50 border-b border-amber-100">
+              <CardTitle className="flex items-center gap-2 text-amber-800">
+                <Eye className="h-5 w-5" />
+                Live Preview
+              </CardTitle>
             </CardHeader>
-            <CardContent>
-              <TemplatePreview
-                config={form.getValues()}
-                slug={slug || 'preview'}
-              />
+            <CardContent className="p-4">
+              <div className="bg-gradient-to-br from-rose-50 to-pink-50 rounded-lg p-2 border border-rose-100">
+                <TemplatePreview
+                  config={form.getValues()}
+                  slug={slug || 'preview'}
+                />
+              </div>
             </CardContent>
           </Card>
         </div>
