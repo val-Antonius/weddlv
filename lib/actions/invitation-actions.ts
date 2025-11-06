@@ -26,13 +26,30 @@ export async function createInvitation(data: CreateInvitationFormValues) {
       return { success: false, error: 'Unauthorized' }
     }
 
+    // Safely stringify config_json to prevent JSON errors
+    let configJson
+    try {
+      configJson = typeof validatedData.data.config_json === 'string' 
+        ? validatedData.data.config_json 
+        : JSON.stringify(validatedData.data.config_json)
+      
+      // Check payload size (approximate)
+      const payloadSize = new Blob([configJson]).size
+      if (payloadSize > 45 * 1024 * 1024) { // 45MB limit
+        return { success: false, error: 'Invitation data is too large. Please reduce image sizes or remove some photos.' }
+      }
+    } catch (jsonError) {
+      console.error('JSON stringification error:', jsonError)
+      return { success: false, error: 'Invalid invitation configuration data' }
+    }
+
     // Create invitation
     const { data: invitation, error } = await (supabase as any)
       .from('invitations')
       .insert({
         user_id: user.id,
         slug: validatedData.data.slug,
-        config_json: validatedData.data.config_json as any,
+        config_json: configJson,
         is_published: validatedData.data.is_published,
       })
       .select()
@@ -40,6 +57,9 @@ export async function createInvitation(data: CreateInvitationFormValues) {
 
     if (error) {
       console.error('Database error:', error)
+      if (error.message?.includes('too large')) {
+        return { success: false, error: 'Invitation data is too large. Please reduce image sizes or remove some photos.' }
+      }
       return { success: false, error: 'Failed to create invitation' }
     }
 
@@ -49,6 +69,9 @@ export async function createInvitation(data: CreateInvitationFormValues) {
     return { success: true, data: invitation }
   } catch (error) {
     console.error('Unexpected error:', error)
+    if (error instanceof Error && error.message?.includes('body size')) {
+      return { success: false, error: 'Invitation data is too large. Please reduce image sizes or remove some photos.' }
+    }
     return { success: false, error: 'An unexpected error occurred' }
   }
 }
@@ -86,7 +109,23 @@ export async function updateInvitation(
     }
     
     if (updateData.config_json) {
-      updateData.config_json = updateData.config_json as any
+      // Safely stringify config_json to prevent JSON errors
+      try {
+        const configJson = typeof updateData.config_json === 'string' 
+          ? updateData.config_json 
+          : JSON.stringify(updateData.config_json)
+        
+        // Check payload size (approximate)
+        const payloadSize = new Blob([configJson]).size
+        if (payloadSize > 45 * 1024 * 1024) { // 45MB limit
+          return { success: false, error: 'Invitation data is too large. Please reduce image sizes or remove some photos.' }
+        }
+        
+        updateData.config_json = configJson
+      } catch (jsonError) {
+        console.error('JSON stringification error:', jsonError)
+        return { success: false, error: 'Invalid invitation configuration data' }
+      }
     }
 
     const { data: invitation, error } = await (supabase as any)

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { ArrowLeft, ArrowRight, Save, Eye, Sparkles, X, ChevronLeft, ChevronRight, Home } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Save, Eye, Sparkles, X, ChevronLeft, ChevronRight, Home, AlertCircle } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { invitationConfigSchema, type InvitationConfigFormValues } from '@/lib/validations'
@@ -41,6 +41,7 @@ export function InvitationEditor({ mode, initialData }: InvitationEditorProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
   const [showPreviewPanel, setShowPreviewPanel] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const defaultValues: InvitationConfigFormValues = {
     template: 'simple-modern',
@@ -149,6 +150,7 @@ export function InvitationEditor({ mode, initialData }: InvitationEditorProps) {
 
   const handleSave = useCallback(async () => {
     setIsSubmitting(true)
+    setError(null)
     
     try {
       const config = form.getValues()
@@ -165,6 +167,7 @@ export function InvitationEditor({ mode, initialData }: InvitationEditorProps) {
         if (result.success) {
           router.push('/admin/dashboard')
         } else {
+          setError(result.error || 'Failed to create invitation')
           console.error('Failed to create invitation:', result.error)
         }
       } else if (initialData) {
@@ -172,10 +175,13 @@ export function InvitationEditor({ mode, initialData }: InvitationEditorProps) {
         if (result.success) {
           router.push('/admin/dashboard')
         } else {
+          setError(result.error || 'Failed to update invitation')
           console.error('Failed to update invitation:', result.error)
         }
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred'
+      setError(errorMessage)
       console.error('Error saving invitation:', error)
     } finally {
       setIsSubmitting(false)
@@ -292,6 +298,20 @@ export function InvitationEditor({ mode, initialData }: InvitationEditorProps) {
               </div>
             </CardHeader>
             <CardContent className="p-6">
+              {error && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+                  <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-medium text-red-800 mb-1">Error saving invitation</h4>
+                    <p className="text-sm text-red-700">{error}</p>
+                    {error.includes('too large') && (
+                      <p className="text-xs text-red-600 mt-2">
+                        Tip: Try reducing image file sizes or removing some photos from the gallery.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
               <form onSubmit={(e) => e.preventDefault()}>
                 {renderStepContent()}
               </form>

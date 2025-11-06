@@ -66,18 +66,18 @@ export function CoverSection({ config, className }: CoverSectionProps) {
           <div className={`space-y-4 ${styles.couple}`}>
             <div className="space-y-2">
               <div className="flex items-center justify-center gap-4">
-                {couple.bride.photo && (
+                {couple.bride.photo && couple.bride.photo.trim() !== '' && (
                   <img
                     src={couple.bride.photo}
-                    alt={couple.bride.fullName}
+                    alt={couple.bride.fullName || 'Bride'}
                     className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
                   />
                 )}
                 <div className="text-4xl">&</div>
-                {couple.groom.photo && (
+                {couple.groom.photo && couple.groom.photo.trim() !== '' && (
                   <img
                     src={couple.groom.photo}
-                    alt={couple.groom.fullName}
+                    alt={couple.groom.fullName || 'Groom'}
                     className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
                   />
                 )}

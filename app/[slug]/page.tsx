@@ -13,17 +13,17 @@ import type { Database } from '@/types/database'
 import type { InvitationConfig } from '@/types/invitation'
 
 interface PageProps {
-  params: {
+  params: Promise<{
     slug: string
-  }
-  searchParams: {
+  }>
+  searchParams: Promise<{
     to?: string
-  }
+  }>
 }
 
 export default async function InvitationPage({ params, searchParams }: PageProps) {
-  const { slug } = params
-  const { to: guestName } = searchParams
+  const { slug } = await params
+  const { to: guestName } = await searchParams
   const supabase = await createClient()
 
   // Fetch invitation by slug
@@ -93,7 +93,7 @@ export default async function InvitationPage({ params, searchParams }: PageProps
   return (
     <div className="min-h-screen">
       {/* Music Player - Always present if configured */}
-      {invitationConfig.music && (
+      {invitationConfig.music?.url && (
         <MusicPlayer music={invitationConfig.music} />
       )}
 
@@ -138,10 +138,6 @@ export default async function InvitationPage({ params, searchParams }: PageProps
         <RSVPForm 
           invitationId={invitation.id}
           invitationTitle={coupleNames || 'Wedding Invitation'}
-          onSuccess={() => {
-            // You could show a success message or redirect here
-            console.log('RSVP submitted successfully!')
-          }}
         />
       </div>
 

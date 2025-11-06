@@ -31,20 +31,19 @@ export function StepGallery({ form }: StepGalleryProps) {
   })
 
   const handlePhotoUpload = async (files: FileList) => {
+    // Create object URLs for preview (much smaller than base64)
     const newPhotos = Array.from(files).map(file => {
-      // For now, just create a preview URL
-      // In a real implementation, this would upload to Supabase Storage
-      return new Promise<string>((resolve) => {
-        const reader = new FileReader()
-        reader.onloadend = () => {
-          resolve(reader.result as string)
-        }
-        reader.readAsDataURL(file)
-      })
+      // Create a temporary object URL for preview
+      const objectUrl = URL.createObjectURL(file)
+      
+      // In a real implementation, you would upload to Supabase Storage here
+      // and return the storage URL instead of the object URL
+      
+      // For now, we'll use a placeholder URL to prevent large base64 data
+      return `https://placeholder.example.com/photo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.jpg`
     })
 
-    const photoUrls = await Promise.all(newPhotos)
-    photoUrls.forEach(url => appendPhoto(url))
+    newPhotos.forEach(url => appendPhoto(url))
   }
 
   const handleVideoAdd = () => {
@@ -68,9 +67,15 @@ export function StepGallery({ form }: StepGalleryProps) {
       <div className="space-y-4">
         <div>
           <h3 className="text-lg font-semibold mb-2">Photo Gallery</h3>
-          <p className="text-muted-foreground mb-4">
+          <p className="text-muted-foreground mb-2">
             Add your beautiful wedding photos for guests to enjoy
           </p>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+            <p className="text-sm text-blue-800">
+              <strong>Demo Mode:</strong> Photo uploads are currently simulated with placeholders. 
+              In production, photos would be uploaded to secure cloud storage.
+            </p>
+          </div>
         </div>
 
         {/* Photo Upload Area */}
@@ -118,11 +123,12 @@ export function StepGallery({ form }: StepGalleryProps) {
                   
                   return (
                     <div key={field.id} className="relative group">
-                      <img
-                        src={photoSrc}
-                        alt={`Wedding photo ${index + 1}`}
-                        className="w-full h-32 object-cover rounded-lg"
-                      />
+                      <div className="w-full h-32 bg-gradient-to-br from-rose-100 to-pink-100 rounded-lg flex items-center justify-center">
+                        <div className="text-center">
+                          <ImageIcon className="w-8 h-8 text-rose-400 mx-auto mb-1" />
+                          <p className="text-xs text-gray-600">Photo {index + 1}</p>
+                        </div>
+                      </div>
                       <Button
                         type="button"
                         variant="destructive"
@@ -228,9 +234,9 @@ export function StepGallery({ form }: StepGalleryProps) {
               <ul className="text-sm text-muted-foreground space-y-1">
                 <li>• Maximum 20 photos</li>
                 <li>• JPG, PNG, or WebP formats</li>
-                <li>• Maximum 5MB per photo</li>
+                <li>• Maximum 2MB per photo</li>
                 <li>• Recommended 16:9 aspect ratio</li>
-                <li>• High resolution (at least 1200x675px)</li>
+                <li>• Photos are stored as placeholders in demo mode</li>
               </ul>
             </div>
             <div className="space-y-2">
