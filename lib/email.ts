@@ -1,6 +1,14 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Initialize Resend client only when needed
+let resend: Resend | null = null
+
+function getResendClient() {
+  if (!resend && process.env.RESEND_API_KEY) {
+    resend = new Resend(process.env.RESEND_API_KEY)
+  }
+  return resend
+}
 
 interface RSVPEmailData {
   guestName: string
@@ -16,7 +24,12 @@ interface RSVPEmailData {
 
 export async function sendRSVPNotificationEmail(data: RSVPEmailData) {
   try {
-    const { error } = await resend.emails.send({
+    const client = getResendClient()
+    if (!client) {
+      throw new Error('Resend client not available')
+    }
+    
+    const { error } = await client.emails.send({
       from: 'weddlv@resend.dev', // Update this with your verified domain
       to: [data.hostEmail],
       subject: `New RSVP: ${data.guestName} - ${data.attendance ? 'Attending' : 'Not Attending'}`,
@@ -72,7 +85,12 @@ export async function sendRSVPNotificationEmail(data: RSVPEmailData) {
 
 export async function sendGuestConfirmationEmail(data: RSVPEmailData) {
   try {
-    const { error } = await resend.emails.send({
+    const client = getResendClient()
+    if (!client) {
+      throw new Error('Resend client not available')
+    }
+    
+    const { error } = await client.emails.send({
       from: 'weddlv@resend.dev', // Update this with your verified domain
       to: [data.guestEmail],
       subject: `RSVP Confirmation - ${data.invitationTitle || 'Wedding'}`,
