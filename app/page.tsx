@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Check, Heart, Smartphone, BarChart3, Users, Star, ArrowRight, Leaf, Diamond, Sparkles } from 'lucide-react'
+import { Check, Heart, Smartphone, BarChart3, Users, Star, ArrowRight, Leaf, Diamond, Sparkles, Zap, Gamepad2, Shapes } from 'lucide-react'
 import Link from 'next/link'
 
 const templates = [
@@ -37,6 +37,39 @@ const templates = [
     icon: Sparkles,
     iconColor: 'text-pink-500',
     demoUrl: '/demo/colorful-love-joy'
+  },
+  { 
+    id: 4, 
+    name: 'Comic Pop Art', 
+    style: 'Bold', 
+    price: 'Premium', 
+    description: 'Dynamic comic book superhero adventure',
+    gradient: 'from-red-200 via-yellow-200 to-blue-200',
+    icon: Zap,
+    iconColor: 'text-red-600',
+    demoUrl: '/demo/comic-pop-art'
+  },
+  { 
+    id: 5, 
+    name: 'Pixel Arcade', 
+    style: 'Retro', 
+    price: 'Premium', 
+    description: '8-bit gaming nostalgia with pixel-perfect design',
+    gradient: 'from-cyan-200 via-purple-200 to-indigo-200',
+    icon: Gamepad2,
+    iconColor: 'text-cyan-600',
+    demoUrl: '/demo/pixel-arcade'
+  },
+  { 
+    id: 6, 
+    name: 'Memphis Abstract', 
+    style: 'Postmodern', 
+    price: 'Premium', 
+    description: 'Bold 1980s design rebellion with geometric chaos',
+    gradient: 'from-pink-200 via-yellow-200 to-cyan-200',
+    icon: Shapes,
+    iconColor: 'text-pink-600',
+    demoUrl: '/demo/memphis-abstract'
   },
 ]
 
@@ -91,9 +124,12 @@ export default function Home() {
               <Badge variant="outline">Natural</Badge>
               <Badge variant="outline">Classic</Badge>
               <Badge variant="outline">Modern</Badge>
+              <Badge variant="outline">Bold</Badge>
+              <Badge variant="outline">Retro</Badge>
+              <Badge variant="outline">Postmodern</Badge>
             </div>
           </div>
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
             {templates.map((template) => {
               const IconComponent = template.icon
               return (
