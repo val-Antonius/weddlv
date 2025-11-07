@@ -1,14 +1,43 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Check, Heart, Smartphone, BarChart3, Users, Star, ArrowRight } from 'lucide-react'
+import { Check, Heart, Smartphone, BarChart3, Users, Star, ArrowRight, Leaf, Diamond, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 
 const templates = [
-  { id: 1, name: 'Elegant Rose', style: 'Classic', price: 'Free', image: '/templates/elegant-rose.jpg' },
-  { id: 2, name: 'Modern Minimal', style: 'Modern', price: 'Premium', image: '/templates/modern-minimal.jpg' },
-  { id: 3, name: 'Rustic Garden', style: 'Rustic', price: 'Premium', image: '/templates/rustic-garden.jpg' },
-  { id: 4, name: 'Vintage Lace', style: 'Vintage', price: 'Free', image: '/templates/vintage-lace.jpg' },
+  { 
+    id: 1, 
+    name: 'Floral Forest', 
+    style: 'Natural', 
+    price: 'Premium', 
+    description: 'Organic woodland romance with emerald greens',
+    gradient: 'from-emerald-100 to-amber-100',
+    icon: Leaf,
+    iconColor: 'text-emerald-600',
+    demoUrl: '/demo/floral-forest'
+  },
+  { 
+    id: 2, 
+    name: 'Monochrome Vintage', 
+    style: 'Classic', 
+    price: 'Premium', 
+    description: 'Timeless black & white Art Deco elegance',
+    gradient: 'from-zinc-100 to-neutral-100',
+    icon: Diamond,
+    iconColor: 'text-zinc-900',
+    demoUrl: '/demo/monochrome-vintage'
+  },
+  { 
+    id: 3, 
+    name: 'Colorful Love Joy', 
+    style: 'Modern', 
+    price: 'Premium', 
+    description: 'Vibrant rainbow celebration of love',
+    gradient: 'from-pink-200 via-purple-200 to-blue-200',
+    icon: Sparkles,
+    iconColor: 'text-pink-500',
+    demoUrl: '/demo/colorful-love-joy'
+  },
 ]
 
 const testimonials = [
@@ -59,32 +88,47 @@ export default function Home() {
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Choose Your Perfect Template</h2>
             <div className="flex justify-center gap-2 mb-8">
               <Badge variant="secondary">All Styles</Badge>
+              <Badge variant="outline">Natural</Badge>
               <Badge variant="outline">Classic</Badge>
               <Badge variant="outline">Modern</Badge>
-              <Badge variant="outline">Rustic</Badge>
-              <Badge variant="outline">Vintage</Badge>
             </div>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {templates.map((template) => (
-              <Card key={template.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                <div className="aspect-[3/4] bg-gradient-to-br from-rose-100 to-pink-100 flex items-center justify-center">
-                  <div className="text-center p-4">
-                    <Heart className="w-12 h-12 text-rose-400 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600">Preview</p>
-                  </div>
-                </div>
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-semibold">{template.name}</h3>
-                    <Badge variant={template.price === 'Free' ? 'secondary' : 'default'}>
+          <div className="grid md:grid-cols-3 gap-8">
+            {templates.map((template) => {
+              const IconComponent = template.icon
+              return (
+                <Card key={template.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-105">
+                  <div className={`aspect-[4/3] bg-gradient-to-br ${template.gradient} flex items-center justify-center relative`}>
+                    <div className="text-center p-6">
+                      <IconComponent className={`w-16 h-16 ${template.iconColor} mx-auto mb-4`} />
+                      <p className="text-sm text-gray-600 font-medium">Live Preview Available</p>
+                    </div>
+                    <Badge className="absolute top-4 right-4 bg-white/90 text-gray-700 hover:bg-white">
                       {template.price}
                     </Badge>
                   </div>
-                  <p className="text-sm text-gray-600">{template.style} Style</p>
-                </CardContent>
-              </Card>
-            ))}
+                  <CardContent className="p-6">
+                    <div className="mb-4">
+                      <h3 className="text-xl font-bold mb-2">{template.name}</h3>
+                      <Badge variant="outline" className="mb-3">
+                        {template.style} Style
+                      </Badge>
+                      <p className="text-sm text-gray-600 leading-relaxed">{template.description}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Link href={template.demoUrl} className="flex-1">
+                        <Button className="w-full" variant="outline">
+                          View Demo
+                        </Button>
+                      </Link>
+                      <Button className="flex-1">
+                        Use Template
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
           </div>
         </div>
       </section>
