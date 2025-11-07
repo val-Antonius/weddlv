@@ -90,35 +90,37 @@ export async function POST(request: Request) {
       console.error('Error parsing invitation config:', configError)
     }
 
-    // Send email notifications asynchronously (don't block the response)
-    const emailData = {
-      guestName: name,
-      guestEmail: email,
-      guestPhone: phone,
-      attendance,
-      guestCount: guest_count,
-      message,
-      invitationTitle: (invitation as any).slug,
-      coupleNames,
-      hostEmail: (invitation as any).user?.email || '',
-    }
+    // Send email notifications if enabled
+    const emailEnabled = process.env.ENABLE_EMAIL_NOTIFICATIONS === 'true'
+    
+    if (emailEnabled && process.env.RESEND_API_KEY) {
+      const emailData = {
+        guestName: name,
+        guestEmail: email,
+        guestPhone: phone,
+        attendance,
+        guestCount: guest_count,
+        message,
+        invitationTitle: (invitation as any).slug,
+        coupleNames,
+        hostEmail: (invitation as any).user?.email || '',
+      }
 
-    // Send notification to host
-    if (emailData.hostEmail && process.env.RESEND_API_KEY) {
+      // Send notification to host
       try {
         await sendRSVPNotificationEmail(emailData)
       } catch (emailError) {
-        console.error('Host email notification failed:', emailError)
-        // Don't fail the RSVP if email fails
+        console.error('Host notification email error:', emailError)
       }
 
       // Send confirmation to guest
       try {
         await sendGuestConfirmationEmail(emailData)
       } catch (emailError) {
-        console.error('Guest confirmation email failed:', emailError)
-        // Don't fail the RSVP if email fails
+        console.error('Guest confirmation email error:', emailError)
       }
+    } else {
+      console.log('RSVP submitted successfully - Email notifications disabled')
     }
 
     // Revalidate any pages that might show this data
