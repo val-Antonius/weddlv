@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { sendRSVPNotificationEmail, sendGuestConfirmationEmail } from '@/lib/email'
@@ -21,8 +21,8 @@ export async function POST(request: Request) {
 
     const { invitation_id, name, email, phone, attendance, guest_count, message } = validatedData.data
 
-    // Create Supabase client
-    const supabase = await createClient()
+    // Create Supabase service client (bypasses RLS)
+    const supabase = createServiceClient()
 
     // First, get the invitation details to find the host
     const { data: invitation, error: invitationError } = await supabase
