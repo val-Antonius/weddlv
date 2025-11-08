@@ -11,7 +11,7 @@ interface EditInvitationPageProps {
 }
 
 export default async function EditInvitationPage({ params }: EditInvitationPageProps) {
-  const { id } = params
+  const { id } = await params
 
   // Fetch invitation data
   const result = await getInvitation(id)
